@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Happy Valentine's Day 💕</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            background: linear-gradient(135deg, #ffeef8 0%, #fff5f7 50%, #ffe8f0 100%);
+            cursor: none;
+            touch-action: manipulation;
+        }
+
+        body.touch {
+            cursor: auto;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            pointer-events: none;
+            padding: 1rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            font-weight: 600;
+            background: linear-gradient(135deg, #ff6b9d, #c44569, #ff1493);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+            animation: fadeInUp 1s ease-out, glow 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+        }
+
+        p {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            color: #666;
+            font-weight: 300;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .cursor-follow {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff6b9d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            mix-blend-mode: difference;
+            opacity: 0;
+        }
+
+        body:not(.touch) .cursor-follow {
+            opacity: 1;
+        }
+
+        .heart {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatHeart 2s ease-out forwards;
+        }
+
+        .ripple {
+            position: fixed;
+            border: 2px solid #ff6b9d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99;
+            animation: rippleExpand 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.4));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.8));
+            }
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(0) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-100px) scale(1.5) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-200px) scale(0.5) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes rippleExpand {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            /* Mobile specific styles */
+            .content p::after {
+                content: ' 👆';
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="cursor-follow"></div>
+    
+    <div class="content">
+        <h1>Happy Valentine's Day 💕</h1>
+        <p>Tap anywhere to spread the love ✨</p>
+    </div>
+
+    <script>
+        // Detect touch device
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouch) {
+            document.body.classList.add('touch');
+        }
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        // Custom cursor (desktop only)
+        const cursorFollow = document.querySelector('.cursor-follow');
+        
+        function updateCursor(x, y) {
+            cursorFollow.style.left = x - 10 + 'px';
+            cursorFollow.style.top = y - 10 + 'px';
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isTouch) {
+                updateCursor(e.clientX, e.clientY);
+            }
+        });
+
+        // Unified interaction handler
+        function createInteraction(x, y) {
+            const hearts = ['❤️', '💕', '💖', '💗', '💓', '💝', '💞'];
+            
+            // Create heart
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = x - 15 + 'px';
+            heart.style.top = y - 15 + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 2000);
+
+            // Create ripple effect
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.marginLeft = '0px';
+            ripple.style.marginTop = '0px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 1000);
+
+            // Add sparkles
+            for (let i = 0; i < 8; i++) {
+                sparkles.push(new Sparkle(x, y));
+            }
+        }
+
+        // Touch events
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.touches) {
+                createInteraction(touch.clientX, touch.clientY);
+                mouseX = touch.clientX;
+                mouseY = touch.clientY;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+            }
+        });
+
+        // Click events (desktop)
+        document.addEventListener('click', (e) => {
+            if (!isTouch) {
+                createInteraction(e.clientX, e.clientY);
+            }
+        });
+
+        // Sparkle particles
+        class Sparkle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = (Math.random() - 0.5) * 6;
+                this.speedY = (Math.random() - 0.5) * 6 - 2;
+                this.life = 60;
+                this.color = ['#ffb3d9', '#ffc9e3', '#ffd9eb', '#ff69b4'][Math.floor(Math.random() * 4)];
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += 0.1;
+                this.life--;
+            }
+
+            draw() {
+                const alpha = this.life / 60;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        const sparkles = [];
+
+        class Petal {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height;
+                this.size = Math.random() * 10 + 8;
+                this.speedY = Math.random() * 1.5 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.6 + 0.4;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 2 - 1;
+                this.swayAmplitude = Math.random() * 2 + 1;
+                this.swaySpeed = Math.random() * 0.02 + 0.01;
+                this.swayOffset = Math.random() * 100;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.swayOffset += this.swaySpeed;
+                const sway = Math.sin(this.swayOffset) * this.swayAmplitude;
+                this.x += this.speedX + sway;
+
+                const dx = this.x - mouseX;
+                const dy = this.y - mouseY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const maxDistance = isTouch ? 150 : 200;
+
+                if (distance < maxDistance) {
+                    const force = (1 - distance / maxDistance) * 0.5;
+                    this.x += dx * force * 0.1;
+                    this.y += dy * force * 0.1;
+                    this.rotationSpeed += force * 5;
+                }
+
+                this.rotation += this.rotationSpeed;
+                this.rotationSpeed *= 0.98;
+
+                if (this.y > canvas.height + 20) {
+                    this.y = -20;
+                    this.x = Math.random() * canvas.width;
+                }
+                if (this.x > canvas.width + 20) this.x = -20;
+                if (this.x < -20) this.x = canvas.width + 20;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = this.opacity;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(
+                    -this.size / 2, -this.size / 2,
+                    -this.size / 2, this.size / 2,
+                    0, this.size
+                );
+                ctx.bezierCurveTo(
+                    this.size / 2, this.size / 2,
+                    this.size / 2, -this.size / 2,
+                    0, 0
+                );
+
+                const gradient = ctx.createLinearGradient(-this.size, -this.size, this.size, this.size);
+                gradient.addColorStop(0, '#ffb3d9');
+                gradient.addColorStop(0.5, '#ffc9e3');
+                gradient.addColorStop(1, '#ffd9eb');
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(255, 182, 193, 0.3)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        // Adjust petal count based on device
+        const petalCount = isTouch ? 60 : 100;
+        const petals = [];
+        for (let i = 0; i < petalCount; i++) {
+            petals.push(new Petal());
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isTouch) {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            petals.forEach(petal => {
+                petal.update();
+                petal.draw();
+            });
+
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                sparkles[i].update();
+                sparkles[i].draw();
+                if (sparkles[i].life <= 0) {
+                    sparkles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
