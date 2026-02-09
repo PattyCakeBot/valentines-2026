@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>A Valentine's Story 💕</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Crimson+Text:wght@300;400&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            transition: background 1.5s ease;
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+        }
+
+        :root {
+            --bg-start: #FFE5EC;
+            --bg-end: #FFF0F5;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .peek-creature {
+            position: fixed;
+            font-size: 4rem;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .peek-bottom-right {
+            bottom: -50px;
+            right: -50px;
+            animation: peekInBottomRight 4s ease-in-out infinite;
+        }
+
+        .peek-bottom-left {
+            bottom: -50px;
+            left: -50px;
+            animation: peekInBottomLeft 4s ease-in-out infinite 2s;
+        }
+
+        @keyframes peekInBottomRight {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-30px, -30px) rotate(-15deg); }
+        }
+
+        @keyframes peekInBottomLeft {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, -30px) rotate(15deg); }
+        }
+
+        .story-container {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .story-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out;
+            padding: 3rem 2rem;
+            position: relative;
+        }
+
+        .story-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .story-card {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1),
+                        inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .story-text {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            line-height: 2;
+            color: #333;
+            text-align: center;
+            margin: 2rem 0;
+            font-weight: 300;
+        }
+
+        .animal {
+            font-size: 5rem;
+            margin: 1.5rem;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+        }
+
+        .animal.hop {
+            animation: hop 2s ease-in-out infinite;
+        }
+
+        .animal.flutter {
+            animation: flutter 3s ease-in-out infinite;
+        }
+
+        .animal.bloom {
+            animation: bloom 4s ease-in-out infinite;
+        }
+
+        .animal.zigzag {
+            animation: zigzag 5s linear infinite;
+        }
+
+        .animal.sway {
+            animation: sway 3s ease-in-out infinite;
+        }
+
+        @keyframes hop {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-30px) rotate(-5deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        @keyframes flutter {
+            0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+            25% { transform: translateY(-10px) scale(1.1) rotate(10deg); }
+            50% { transform: translateY(-5px) scale(1) rotate(-5deg); }
+            75% { transform: translateY(-15px) scale(1.1) rotate(15deg); }
+        }
+
+        @keyframes bloom {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+        }
+
+        @keyframes zigzag {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(30px, -20px); }
+            50% { transform: translate(60px, 0); }
+            75% { transform: translate(30px, 20px); }
+        }
+
+        @keyframes sway {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(20px) rotate(10deg); }
+        }
+
+        .suspense {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dots {
+            font-size: 4rem;
+            letter-spacing: 1rem;
+            animation: pulse 1.5s ease-in-out infinite;
+            color: rgba(255,255,255,0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .question {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .question h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 10vw, 5rem);
+            background: linear-gradient(135deg, #ff6b9d 0%, #ffd700 50%, #ff1493 100%);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 3rem;
+            animation: shimmer 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.6));
+        }
+
+        @keyframes shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .option {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            padding: 2rem;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1),
+                        inset 0 1px 0 rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid transparent;
+            text-align: center;
+        }
+
+        .option:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 25px 50px rgba(255, 107, 157, 0.4);
+            border-color: #ff6b9d;
+        }
+
+        .option input[type="checkbox"] {
+            appearance: none;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #ff6b9d;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background: white;
+        }
+
+        .option input[type="checkbox"]:checked {
+            background: linear-gradient(135deg, #ff6b9d, #ff1493);
+            border-color: #ff1493;
+            transform: rotate(360deg);
+            border-radius: 50%;
+        }
+
+        .option input[type="checkbox"]:checked::after {
+            content: '♥';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.5);
+            color: white;
+            font-size: 1.5rem;
+            animation: heartBeat 0.5s ease;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        .option.checked {
+            background: linear-gradient(135deg, rgba(255, 238, 248, 0.8), rgba(255, 245, 247, 0.8));
+            border-color: #ff6b9d;
+            animation: celebrate 0.6s ease;
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .option label {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            font-weight: 700;
+        }
+
+        .firework-particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        @keyframes fireworkExplode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .story-card { padding: 2rem; }
+            .animal { font-size: 3.5rem; }
+            .options { grid-template-columns: 1fr; }
+            .peek-creature { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <!-- Peeking creatures -->
+    <div class="peek-creature peek-bottom-right">🐻</div>
+    <div class="peek-creature peek-bottom-left">🦊</div>
+    
+    <div class="story-container">
+        <section class="story-section" data-bg="linear-gradient(135deg, #FFE5EC, #FFF0F5)">
+            <div class="story-card">
+                <div class="animal hop">🐰</div>
+                <p class="story-text">
+                    Once upon a time, in a meadow where petals danced with the breeze...
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section" data-bg="linear-gradient(135deg, #FFDFD3, #FFB6B9)">
+            <div class="story-card">
+                <div class="animal flutter">🦋</div>
+                <p class="story-text">
+                    A little bunny met a butterfly, and together they discovered something magical.
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section" data-bg="linear-gradient(135deg, #FFF4E6, #FFDAB9)">
+            <div class="story-card">
+                <div class="animal bloom">🌸</div>
+                <p class="story-text">
+                    They found that love wasn't just a word—it was the warmth of sunshine...
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section" data-bg="linear-gradient(135deg, #FFFACD, #FFE4B5)">
+            <div class="story-card">
+                <div class="animal zigzag">🐝</div>
+                <p class="story-text">
+                    The softness of clouds, and the promise of forever in a single moment.
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section" data-bg="linear-gradient(135deg, #FFE0F0, #FF69B4)">
+            <div class="story-card">
+                <div class="animal sway">🦌</div>
+                <p class="story-text">
+                    Days turned to nights, and with each star that appeared in the sky...
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section" data-bg="linear-gradient(135deg, #F5E6FF, #DDA0DD)">
+            <div class="story-card">
+                <div class="animal flutter">✨</div>
+                <p class="story-text">
+                    Their hearts grew closer, beating in harmony like a song only they could hear.
+                </p>
+            </div>
+        </section>
+
+        <section class="story-section suspense" data-bg="linear-gradient(135deg, #2D1B3D, #1A0A23)">
+            <p class="dots">. . .</p>
+        </section>
+
+        <section class="story-section question" data-bg="linear-gradient(135deg, #FFE5EC, #FFF0F5, #FFE8F0)">
+            <h1>Will You Be My Valentine? 💕</h1>
+            
+            <div class="options">
+                <div class="option">
+                    <label>
+                        <input type="checkbox" id="yes">
+                        <span>Yes! 💖</span>
+                    </label>
+                </div>
+                
+                <div class="option">
+                    <label>
+                        <input type="checkbox" id="absolutely">
+                        <span>Absolutely! 🌟</span>
+                    </label>
+                </div>
+                
+                <div class="option">
+                    <label>
+                        <input type="checkbox" id="ofcourse">
+                        <span>Of course! 🎉</span>
+                    </label>
+                </div>
+                
+                <div class="option">
+                    <label>
+                        <input type="checkbox" id="forever">
+                        <span>Forever & Ever! 💫</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Multi-type petals
+        class Petal {
+            constructor() {
+                this.reset();
+                this.type = Math.floor(Math.random() * 3); // 0: rose, 1: cherry, 2: heart
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * -canvas.height;
+                this.size = Math.random() * 10 + 5;
+                this.speedY = Math.random() * 1.2 + 0.4;
+                this.speedX = Math.random() * 0.6 - 0.3;
+                this.opacity = Math.random() * 0.7 + 0.3;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 3 - 1.5;
+                this.hue = Math.random() * 60 + 320; // Pink to red range
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+
+                if (this.y > canvas.height + 20) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate((this.rotation * Math.PI) / 180);
+                ctx.globalAlpha = this.opacity;
+
+                if (this.type === 2) {
+                    // Heart shape
+                    ctx.fillStyle = `hsl(${this.hue}, 100%, 70%)`;
+                    ctx.font = `${this.size * 2}px Arial`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('♥', 0, 0);
+                } else {
+                    // Petal shape
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.bezierCurveTo(
+                        -this.size / 2, -this.size / 2,
+                        -this.size / 2, this.size / 2,
+                        0, this.size
+                    );
+                    ctx.bezierCurveTo(
+                        this.size / 2, this.size / 2,
+                        this.size / 2, -this.size / 2,
+                        0, 0
+                    );
+
+                    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                    gradient.addColorStop(0, `hsla(${this.hue}, 100%, 90%, ${this.opacity})`);
+                    gradient.addColorStop(1, `hsla(${this.hue}, 100%, 70%, ${this.opacity})`);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        const petals = [];
+        for (let i = 0; i < 80; i++) {
+            petals.push(new Petal());
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            petals.forEach(petal => {
+                petal.update();
+                petal.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Scroll-based background change
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    const bg = entry.target.dataset.bg;
+                    if (bg) {
+                        document.body.style.background = bg;
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.story-section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Fireworks
+        function createFirework(x, y) {
+            const colors = ['#ff6b9d', '#ffc9e3', '#ffd9eb', '#ff69b4', '#ff1493', '#ffd700'];
+            const particles = 40;
+
+            for (let i = 0; i < particles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'firework-particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                const angle = (Math.PI * 2 * i) / particles;
+                const velocity = 120 + Math.random() * 120;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                particle.style.animation = 'fireworkExplode 1.2s ease-out forwards';
+
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1200);
+            }
+        }
+
+        // Checkbox interactions
+        document.querySelectorAll('.option input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const option = this.closest('.option');
+                const rect = option.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+
+                if (this.checked) {
+                    option.classList.add('checked');
+                    createFirework(x, y);
+                    setTimeout(() => createFirework(x, y), 300);
+                    setTimeout(() => createFirework(x, y), 600);
+                } else {
+                    option.classList.remove('checked');
+                }
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
