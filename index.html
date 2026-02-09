@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valentine's Day</title>
+    <title>Happy Valentine's Day 💕</title>
     <style>
         * {
             margin: 0;
@@ -42,13 +42,14 @@
         h1 {
             font-size: 5rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #ff6b9d, #c44569);
+            background: linear-gradient(135deg, #ff6b9d, #c44569, #ff1493);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 1rem;
             letter-spacing: -0.02em;
-            animation: fadeInUp 1s ease-out;
+            animation: fadeInUp 1s ease-out, glow 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
         }
 
         p {
@@ -70,6 +71,14 @@
             mix-blend-mode: difference;
         }
 
+        .heart {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatHeart 2s ease-out forwards;
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -78,6 +87,30 @@
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.4));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(255, 107, 157, 0.8));
+            }
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(0) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-100px) scale(1.5) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(-200px) scale(0.5) rotate(360deg);
+                opacity: 0;
             }
         }
 
@@ -96,8 +129,8 @@
     <div class="cursor-follow"></div>
     
     <div class="content">
-        <h1>Happy Valentine's Day</h1>
-        <p>Let the blossoms dance with your touch</p>
+        <h1>Happy Valentine's Day 💕</h1>
+        <p>Click anywhere to spread the love ✨</p>
     </div>
 
     <script>
@@ -108,7 +141,6 @@
 
         let mouseX = canvas.width / 2;
         let mouseY = canvas.height / 2;
-        let wind = { x: 0, y: 0 };
 
         // Custom cursor
         const cursorFollow = document.querySelector('.cursor-follow');
@@ -116,6 +148,62 @@
             cursorFollow.style.left = e.clientX - 10 + 'px';
             cursorFollow.style.top = e.clientY - 10 + 'px';
         });
+
+        // Click hearts
+        document.addEventListener('click', (e) => {
+            const hearts = ['❤️', '💕', '💖', '💗', '💓', '💝'];
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+            heart.style.left = e.clientX - 15 + 'px';
+            heart.style.top = e.clientY - 15 + 'px';
+            document.body.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 2000);
+
+            // Add sparkles
+            for (let i = 0; i < 5; i++) {
+                sparkles.push(new Sparkle(e.clientX, e.clientY));
+            }
+        });
+
+        // Sparkle particles
+        class Sparkle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 4 + 2;
+                this.speedX = (Math.random() - 0.5) * 4;
+                this.speedY = (Math.random() - 0.5) * 4 - 2;
+                this.life = 60;
+                this.color = ['#ffb3d9', '#ffc9e3', '#ffd9eb', '#ff69b4'][Math.floor(Math.random() * 4)];
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += 0.1; // gravity
+                this.life--;
+            }
+
+            draw() {
+                const alpha = this.life / 60;
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glow effect
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        const sparkles = [];
 
         class Petal {
             constructor() {
@@ -133,7 +221,6 @@
             }
 
             update() {
-                // Natural falling motion with sway
                 this.y += this.speedY;
                 this.swayOffset += this.swaySpeed;
                 const sway = Math.sin(this.swayOffset) * this.swayAmplitude;
@@ -152,11 +239,9 @@
                     this.rotationSpeed += force * 5;
                 }
 
-                // Rotation
                 this.rotation += this.rotationSpeed;
                 this.rotationSpeed *= 0.98;
 
-                // Reset when off screen
                 if (this.y > canvas.height + 20) {
                     this.y = -20;
                     this.x = Math.random() * canvas.width;
@@ -171,7 +256,6 @@
                 ctx.rotate((this.rotation * Math.PI) / 180);
                 ctx.globalAlpha = this.opacity;
 
-                // Draw petal shape
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.bezierCurveTo(
@@ -185,7 +269,6 @@
                     0, 0
                 );
 
-                // Gradient fill
                 const gradient = ctx.createLinearGradient(-this.size, -this.size, this.size, this.size);
                 gradient.addColorStop(0, '#ffb3d9');
                 gradient.addColorStop(0.5, '#ffc9e3');
@@ -193,7 +276,6 @@
                 ctx.fillStyle = gradient;
                 ctx.fill();
 
-                // Subtle stroke
                 ctx.strokeStyle = 'rgba(255, 182, 193, 0.3)';
                 ctx.lineWidth = 0.5;
                 ctx.stroke();
@@ -202,19 +284,16 @@
             }
         }
 
-        // Create petals
         const petals = [];
-        for (let i = 0; i < 80; i++) {
+        for (let i = 0; i < 100; i++) {
             petals.push(new Petal());
         }
 
-        // Mouse movement
         document.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
         });
 
-        // Animation loop
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -223,12 +302,20 @@
                 petal.draw();
             });
 
+            // Update and draw sparkles
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                sparkles[i].update();
+                sparkles[i].draw();
+                if (sparkles[i].life <= 0) {
+                    sparkles.splice(i, 1);
+                }
+            }
+
             requestAnimationFrame(animate);
         }
 
         animate();
 
-        // Resize handler
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
