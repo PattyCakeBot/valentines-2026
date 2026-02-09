@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Happy Valentine's Day 💕</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -16,6 +19,11 @@
             overflow: hidden;
             background: linear-gradient(135deg, #ffeef8 0%, #fff5f7 50%, #ffe8f0 100%);
             cursor: none;
+            touch-action: manipulation;
+        }
+
+        body.touch {
+            cursor: auto;
         }
 
         #canvas {
@@ -37,10 +45,11 @@
             height: 100vh;
             text-align: center;
             pointer-events: none;
+            padding: 1rem;
         }
 
         h1 {
-            font-size: 5rem;
+            font-size: clamp(2.5rem, 10vw, 5rem);
             font-weight: 600;
             background: linear-gradient(135deg, #ff6b9d, #c44569, #ff1493);
             -webkit-background-clip: text;
@@ -53,7 +62,7 @@
         }
 
         p {
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 4vw, 1.5rem);
             color: #666;
             font-weight: 300;
             animation: fadeInUp 1s ease-out 0.3s both;
@@ -69,6 +78,11 @@
             z-index: 9999;
             transition: transform 0.1s ease;
             mix-blend-mode: difference;
+            opacity: 0;
+        }
+
+        body:not(.touch) .cursor-follow {
+            opacity: 1;
         }
 
         .heart {
@@ -77,6 +91,15 @@
             pointer-events: none;
             z-index: 100;
             animation: floatHeart 2s ease-out forwards;
+        }
+
+        .ripple {
+            position: fixed;
+            border: 2px solid #ff6b9d;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99;
+            animation: rippleExpand 1s ease-out forwards;
         }
 
         @keyframes fadeInUp {
@@ -114,12 +137,23 @@
             }
         }
 
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 3rem;
+        @keyframes rippleExpand {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
             }
-            p {
-                font-size: 1.2rem;
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            /* Mobile specific styles */
+            .content p::after {
+                content: ' 👆';
             }
         }
     </style>
@@ -130,10 +164,16 @@
     
     <div class="content">
         <h1>Happy Valentine's Day 💕</h1>
-        <p>Click anywhere to spread the love ✨</p>
+        <p>Tap anywhere to spread the love ✨</p>
     </div>
 
     <script>
+        // Detect touch device
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouch) {
+            document.body.classList.add('touch');
+        }
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -142,28 +182,71 @@
         let mouseX = canvas.width / 2;
         let mouseY = canvas.height / 2;
 
-        // Custom cursor
+        // Custom cursor (desktop only)
         const cursorFollow = document.querySelector('.cursor-follow');
+        
+        function updateCursor(x, y) {
+            cursorFollow.style.left = x - 10 + 'px';
+            cursorFollow.style.top = y - 10 + 'px';
+        }
+
         document.addEventListener('mousemove', (e) => {
-            cursorFollow.style.left = e.clientX - 10 + 'px';
-            cursorFollow.style.top = e.clientY - 10 + 'px';
+            if (!isTouch) {
+                updateCursor(e.clientX, e.clientY);
+            }
         });
 
-        // Click hearts
-        document.addEventListener('click', (e) => {
-            const hearts = ['❤️', '💕', '💖', '💗', '💓', '💝'];
+        // Unified interaction handler
+        function createInteraction(x, y) {
+            const hearts = ['❤️', '💕', '💖', '💗', '💓', '💝', '💞'];
+            
+            // Create heart
             const heart = document.createElement('div');
             heart.className = 'heart';
             heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-            heart.style.left = e.clientX - 15 + 'px';
-            heart.style.top = e.clientY - 15 + 'px';
+            heart.style.left = x - 15 + 'px';
+            heart.style.top = y - 15 + 'px';
             document.body.appendChild(heart);
-            
             setTimeout(() => heart.remove(), 2000);
 
+            // Create ripple effect
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.style.marginLeft = '0px';
+            ripple.style.marginTop = '0px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 1000);
+
             // Add sparkles
-            for (let i = 0; i < 5; i++) {
-                sparkles.push(new Sparkle(e.clientX, e.clientY));
+            for (let i = 0; i < 8; i++) {
+                sparkles.push(new Sparkle(x, y));
+            }
+        }
+
+        // Touch events
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            for (let touch of e.touches) {
+                createInteraction(touch.clientX, touch.clientY);
+                mouseX = touch.clientX;
+                mouseY = touch.clientY;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length > 0) {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+            }
+        });
+
+        // Click events (desktop)
+        document.addEventListener('click', (e) => {
+            if (!isTouch) {
+                createInteraction(e.clientX, e.clientY);
             }
         });
 
@@ -172,9 +255,9 @@
             constructor(x, y) {
                 this.x = x;
                 this.y = y;
-                this.size = Math.random() * 4 + 2;
-                this.speedX = (Math.random() - 0.5) * 4;
-                this.speedY = (Math.random() - 0.5) * 4 - 2;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = (Math.random() - 0.5) * 6;
+                this.speedY = (Math.random() - 0.5) * 6 - 2;
                 this.life = 60;
                 this.color = ['#ffb3d9', '#ffc9e3', '#ffd9eb', '#ff69b4'][Math.floor(Math.random() * 4)];
             }
@@ -182,7 +265,7 @@
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                this.speedY += 0.1; // gravity
+                this.speedY += 0.1;
                 this.life--;
             }
 
@@ -195,7 +278,6 @@
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Glow effect
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = this.color;
                 ctx.fill();
@@ -226,11 +308,10 @@
                 const sway = Math.sin(this.swayOffset) * this.swayAmplitude;
                 this.x += this.speedX + sway;
 
-                // Wind effect from cursor
                 const dx = this.x - mouseX;
                 const dy = this.y - mouseY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                const maxDistance = 200;
+                const maxDistance = isTouch ? 150 : 200;
 
                 if (distance < maxDistance) {
                     const force = (1 - distance / maxDistance) * 0.5;
@@ -284,14 +365,18 @@
             }
         }
 
+        // Adjust petal count based on device
+        const petalCount = isTouch ? 60 : 100;
         const petals = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < petalCount; i++) {
             petals.push(new Petal());
         }
 
         document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+            if (!isTouch) {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }
         });
 
         function animate() {
@@ -302,7 +387,6 @@
                 petal.draw();
             });
 
-            // Update and draw sparkles
             for (let i = sparkles.length - 1; i >= 0; i--) {
                 sparkles[i].update();
                 sparkles[i].draw();
@@ -320,6 +404,11 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
+
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
